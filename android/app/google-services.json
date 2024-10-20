@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "941534078452",
+    "firebase_url": "https://leoq-cc59a-default-rtdb.firebaseio.com",
+    "project_id": "leoq-cc59a",
+    "storage_bucket": "leoq-cc59a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941534078452:android:41ded1c0b339a62f8cc5a1",
+        "android_client_info": {
+          "package_name": "com.example.untitled5"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkMPp9jQQignTUCxUCTwOoVlOxwb36Xrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,71 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+            android:label="Leo Quotes"
+            android:name="${applicationName}"
+            android:icon="@mipmap/ic_launcher"
+            android:enableOnBackInvokedCallback="true">
+
+        <meta-data
+                android:name="flutterEmbedding"
+                android:value="2" />
+
+        <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:launchMode="singleTop"
+                android:taskAffinity=""
+                android:theme="@style/LaunchTheme"
+                android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+                android:hardwareAccelerated="true"
+                android:windowSoftInputMode="adjustResize">
+            <meta-data
+                    android:name="io.flutter.embedding.android.NormalTheme"
+                    android:resource="@style/NormalTheme"/>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- OneSignal configuration -->
+        <meta-data
+                android:name="com.onesignal.NotificationServiceExtension"
+                android:value="com.example.untitled5.OneSignalNotificationService" />
+        <meta-data
+                android:name="com.onesignal.suppressLaunchURLs"
+                android:value="true" />
+        <meta-data
+                android:name="com.onesignal.AppId"
+                android:value="2baf62e7-967f-4a53-9412-e8c4df05f45c" />
+
+        <!-- QuoteWidgetProvider receiver -->
+        <receiver
+                android:name=".QuoteWidgetProvider"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.appwidget.provider"
+                    android:resource="@xml/quote_widget_info" />
+        </receiver>
+
+        <!-- WidgetUpdateReceiver for triggering periodic updates -->
+        <receiver
+                android:name=".WidgetUpdateReceiver"
+                android:exported="false" />
+
+    </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>
