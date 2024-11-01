@@ -64,7 +64,7 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
                   child: Hero(
                     tag: 'app-logo',
                     child: Image.asset(
-                      'assets/images/gen.ico', // Replace with your logo
+                      'assets/icons/leo_app.png', // Replace with your logo
                       width: 120,
                       height: 120,
                     ),
@@ -104,7 +104,7 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
                 // Progress indicator
                 FadeInUp(
                   child: LinearProgressIndicator(
-                    value: 0.66, // Example progress, page 4 of 6
+                    value: 4/6, // Example progress, page 4 of 6
                     backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -113,15 +113,16 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
 
                 // Frequency Options with custom styling
                 Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  child: Wrap(
+                    spacing: 16.0, // Horizontal spacing between items
+                    runSpacing: 16.0, // Vertical spacing when items wrap to the next line
+                    alignment: WrapAlignment.center, // Center-align items within the wrap
                     children: [
+                      _buildFrequencyCard('Every 3 hours', Colors.orange),
                       _buildFrequencyCard('Every 6 hours', Colors.orange),
-                      _buildFrequencyCard('Every 12 hours', Colors.green),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 30),
 
                 // Motivational quote
@@ -144,7 +145,7 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
                     onPressed: () {
                       if (_selectedFrequency.isNotEmpty) {
                         widget.userData.frequency = _selectedFrequency;
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => IntroPageReminder(userData: widget.userData),

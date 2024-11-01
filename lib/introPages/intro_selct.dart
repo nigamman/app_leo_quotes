@@ -75,7 +75,7 @@ class _IntroPageCategoriesState extends State<IntroPageCategories> {
                   child: Hero(
                     tag: 'app-logo',
                     child: Image.asset(
-                      'assets/images/gen.ico', // Replace with your logo
+                      'assets/icons/leo_app.png', // Replace with your logo
                       width: 120,
                       height: 120,
                     ),
@@ -100,7 +100,7 @@ class _IntroPageCategoriesState extends State<IntroPageCategories> {
                 // Progress indicator
                 FadeInUp(
                   child: LinearProgressIndicator(
-                    value: 0.5, // Example progress, page 3 of 6
+                    value: 3/6, // Example progress, page 3 of 6
                     backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -187,7 +187,7 @@ class _IntroPageCategoriesState extends State<IntroPageCategories> {
                       if (_selectedCategories.isNotEmpty) {
                         widget.userData.selectedCategories = _selectedCategories;
                         await _saveSelectedCategories();
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => IntroPageFrequency(userData: widget.userData),

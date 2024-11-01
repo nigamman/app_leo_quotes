@@ -6,32 +6,38 @@ class QuotesService with ChangeNotifier {
   List<String> quotesList = [];
 
   Future<void> fetchQuotes() async {
-    DatabaseEvent event = await _quotesRef.once();
-    DataSnapshot snapshot = event.snapshot;
+    try {
+      DatabaseEvent event = await _quotesRef.once();
+      DataSnapshot snapshot = event.snapshot;
 
-    if (snapshot.exists) {
-      // Assuming the quotes are structured as described
-      List<dynamic> quotesArray = snapshot.value as List<dynamic>;
+      if (snapshot.exists) {
+        // Assuming the quotes are structured as described
+        List<dynamic> quotesArray = snapshot.value as List<dynamic>;
 
-      List<String> tempList = [];
+        List<String> tempList = [];
 
-      for (var quoteObj in quotesArray) {
-        // Access the 'text' field which is a map of quotes
-        Map<dynamic, dynamic> quotesMap = quoteObj['text'];
+        for (var quoteObj in quotesArray) {
+          if (quoteObj != null && quoteObj is Map) {
+            // Access the 'text' field which is a map of quotes
+            Map<dynamic, dynamic> quotesMap = quoteObj['text'];
 
-        // Iterate through the quotes in the map
-        quotesMap.forEach((key, value) {
-          if (value != null) {
-            tempList.add(value); // Collect the quote text
+            // Iterate through the quotes in the map
+            quotesMap.forEach((key, value) {
+              if (value != null && value is String) {
+                tempList.add(value); // Collect the quote text
+              }
+            });
           }
-        });
-      }
+        }
 
-      quotesList = tempList; // Update quotes list
-      notifyListeners(); // Notify listeners about the update
-    } else {
-      quotesList = []; // or handle no quotes found
-      notifyListeners();
+        quotesList = tempList; // Update quotes list
+        notifyListeners(); // Notify listeners about the update
+      } else {
+        quotesList = []; // or handle no quotes found
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error fetching quotes: $e");
     }
   }
 }

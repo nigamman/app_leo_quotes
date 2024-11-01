@@ -1,22 +1,21 @@
 {
   "project_info": {
-    "project_number": "941534078452",
-    "firebase_url": "https://leoq-cc59a-default-rtdb.firebaseio.com",
-    "project_id": "leoq-cc59a",
-    "storage_bucket": "leoq-cc59a.appspot.com"
+    "project_number": "377200756049",
+    "project_id": "leoquotes-3a403",
+    "storage_bucket": "leoquotes-3a403.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:941534078452:android:41ded1c0b339a62f8cc5a1",
+        "mobilesdk_app_id": "1:377200756049:android:5693bbaee6a4a7d9b9ff70",
         "android_client_info": {
-          "package_name": "com.example.untitled5"
+          "package_name": "com.nigamman.leoquotes"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBkMPp9jQQignTUCxUCTwOoVlOxwb36Xrk"
+          "current_key": "AIzaSyDNFnoBpqcOBHkZjY1f0yqcbwE1LDabrcA"
         }
       ],
       "services": {

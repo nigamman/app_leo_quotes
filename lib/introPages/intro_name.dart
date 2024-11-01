@@ -35,9 +35,9 @@ class _IntroPageNameState extends State<IntroPageName> {
       int age = 0;
       List<String> selectedCategories = [];
 
-      UserData userData = UserData(name: name, age: age, selectedCategories: selectedCategories, frequency: '', notificationTime: '');
+      UserData userData = UserData(name: name, age: age, selectedCategories: selectedCategories, frequency: '', notificationTime: '', fcmToken: '');
 
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => IntroPageAge(userData: userData),
@@ -84,7 +84,7 @@ class _IntroPageNameState extends State<IntroPageName> {
                   child: Hero(
                     tag: 'app-logo',
                     child: Image.asset(
-                      'assets/images/gen.ico', // Replace with your logo
+                      'assets/icons/leo_app.png', // Replace with your logo
                       width: 120,
                       height: 120,
                     ),
@@ -109,7 +109,7 @@ class _IntroPageNameState extends State<IntroPageName> {
                 // Progress indicator
                 FadeInUp(
                   child: LinearProgressIndicator(
-                    value: 0.16, // Example progress
+                    value: 1/6, // Example progress
                     backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),

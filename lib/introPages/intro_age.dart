@@ -62,7 +62,7 @@ class _IntroPageAgeState extends State<IntroPageAge> {
                   child: Hero(
                     tag: 'app-logo',
                     child: Image.asset(
-                      'assets/images/gen.ico', // Replace with your logo
+                      'assets/icons/leo_app.png', // Replace with your logo
                       width: 120,
                       height: 120,
                     ),
@@ -87,7 +87,7 @@ class _IntroPageAgeState extends State<IntroPageAge> {
                 // Progress indicator
                 FadeInUp(
                   child: LinearProgressIndicator(
-                    value: 0.33, // Example progress, page 2 of 3
+                    value: 2/6, // Example progress, page 2 of 3
                     backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -144,7 +144,7 @@ class _IntroPageAgeState extends State<IntroPageAge> {
                         if (age > 0) {
                           _storeAge(age);
                           widget.userData.age = age; // Set age in UserData
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (context) => IntroPageCategories(userData: widget.userData),

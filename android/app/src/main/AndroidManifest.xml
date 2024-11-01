@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <application
             android:label="Leo Quotes"
@@ -43,22 +44,18 @@
                 android:name="com.onesignal.AppId"
                 android:value="2baf62e7-967f-4a53-9412-e8c4df05f45c" />
 
-        <!-- QuoteWidgetProvider receiver -->
+        <!-- QuoteHomeWidgetProvider receiver -->
         <receiver
-                android:name=".QuoteWidgetProvider"
+                android:name=".QuoteHomeWidgetProvider"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
             <meta-data
                     android:name="android.appwidget.provider"
                     android:resource="@xml/quote_widget_info" />
         </receiver>
-
-        <!-- WidgetUpdateReceiver for triggering periodic updates -->
-        <receiver
-                android:name=".WidgetUpdateReceiver"
-                android:exported="false" />
 
     </application>
 

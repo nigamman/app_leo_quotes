@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
+
+  @override
+  _WelcomePageState createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<WelcomePage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _showArrow = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels > 50 && _showArrow) {
+      setState(() => _showArrow = false); // Hide arrow after scrolling down
+    } else if (_scrollController.position.pixels <= 50 && !_showArrow) {
+      setState(() => _showArrow = true); // Show arrow when scrolled back to the top
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,46 +51,47 @@ class WelcomePage extends StatelessWidget {
             ),
           ),
           // Abstract shapes
-          // Abstract shapes
           _buildAbstractShape(top: -50, right: -50, size: 200, opacity: 0.1),
           _buildAbstractShape(top: 100, right: -30, size: 150, opacity: 0.2),
           _buildAbstractShape(top: 300, right: 80, size: 250, opacity: 0.15),
-          _buildAbstractShape(top:100, right: 40, size: 180, opacity: 0.25),
+          _buildAbstractShape(top: 100, right: 40, size: 180, opacity: 0.25),
           _buildAbstractShape(top: 200, right: 20, size: 100, opacity: 0.3),
-          // Main content with top padding
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                // Animated Logo with custom icon
-                ZoomIn(
-                  child: Hero(
-                    tag: 'app-logo',
-                    child: Image.asset(
-                      'assets/images/gen.ico', // Replace with your app's logo path
-                      width: 150,
-                      height: 150,
+
+          // Main content with top padding inside a scroll view
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // Animated Logo with custom icon
+                  ZoomIn(
+                    child: Hero(
+                      tag: 'app-logo',
+                      child: Image.asset(
+                        'assets/icons/leo_app.png', // Replace with your app's logo path
+                        width: 150,
+                        height: 150,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-                // Welcome Text with animation
-                FadeIn(
-                  child: Text(
-                    'Welcome to Leo Quotes!',
-                    style: GoogleFonts.lobster(
-                      fontSize: 36,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 30),
+                  // Welcome Text with animation
+                  FadeIn(
+                    child: Text(
+                      'Welcome to Leo Quotes!',
+                      style: GoogleFonts.lobster(
+                        fontSize: 36,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 30),
-                // Features Section with New Font and Animations
-                Expanded(
-                  child: FadeInUp(
+                  const SizedBox(height: 30),
+                  // Features Section with New Font and Animations
+                  FadeInUp(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -84,36 +115,60 @@ class WelcomePage extends StatelessWidget {
                           description: 'Add widgets to access your favorite quotes instantly.',
                           context: context,
                         ),
+                        const SizedBox(height: 20),
+                        _buildFeatureCard(
+                          icon: Icons.share,
+                          title: 'Share Quotes on Social Media',
+                          description: 'Easily share Leo quotes on any platform with one click.',
+                          context: context,
+                        ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-                // Get Started Button with ripple effect
-                ElasticIn(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/namePage');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
+                  const SizedBox(height: 30),
+                  // Get Started Button with ripple effect
+                  ElasticIn(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/namePage');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.deepOrange,
+                        shadowColor: Colors.black,
+                        elevation: 10,
                       ),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepOrange,
-                      shadowColor: Colors.black,
-                      elevation: 10,
-                    ),
-                    child: const Text(
-                      'Get Started',
-                      style: TextStyle(fontSize: 22),
+                      child: const Text(
+                        'Get Started',
+                        style: TextStyle(fontSize: 22),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+          // Scroll Down Arrow Indicator positioned at the bottom center
+          if (_showArrow)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Bounce(
+                infinite: true,
+                child: Center(
+                  child: Icon(
+                    FontAwesomeIcons.arrowDown,
+                    color: Colors.black,
+                    size: 30,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

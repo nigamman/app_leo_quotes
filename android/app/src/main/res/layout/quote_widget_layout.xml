@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/widget_layout_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="16dp"
-        android:background="@android:color/white">
+        android:orientation="vertical"
+        android:padding="5dp"
+        android:background="@drawable/rounded_widget_background"
+        android:gravity="center">
 
     <TextView
             android:id="@+id/widget_quote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Quote will appear here"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:textColor="@android:color/black"
-            android:padding="8dp"
-            android:elevation="4dp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:gravity="center" />
 </LinearLayout>

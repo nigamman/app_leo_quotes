@@ -22,7 +22,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String quote = "Loading your Leo quote...";
   List<String> categoryQuotes = [];
-  int selectedIndex = 0;
+  bool isFavorite = false; // Track favorite status
+  bool _isSharing = false; // Track sharing state
   final DatabaseReference quotesRef = FirebaseDatabase.instance.ref('quotes');
   final ScreenshotController screenshotController = ScreenshotController();
 
@@ -55,7 +56,6 @@ class _HomePageState extends State<HomePage> {
               ? categoryQuotes[0]
               : "No quotes available.";
         });
-
       }
     } catch (e) {
       setState(() {
@@ -63,7 +63,6 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
-
 
   Widget _buildScreenshotContent(String quote) {
     return Container(
@@ -111,6 +110,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _shareQuoteAsImage() async {
+    setState(() {
+      _isSharing = true; // Set sharing state to true
+    });
+
     try {
       final Uint8List image = await screenshotController.captureFromWidget(
         _buildScreenshotContent(quote),
@@ -125,11 +128,17 @@ class _HomePageState extends State<HomePage> {
 
       await Share.shareXFiles(
         [imageXFile],
-        text:
-        'Download our app: https://play.google.com/store/apps/details?id=com.yourapp',
+        text: 'Download the app: https://play.google.com/store/apps/details?id=com.nigamman.leoquotes',
       );
-        } catch (e) {
+
+      // Optional: Show success feedback
+    } catch (e) {
       print('Error sharing the image: $e');
+      _showSnackBar('Failed to share the quote. Please try again.');
+    } finally {
+      setState(() {
+        _isSharing = false; // Reset sharing state
+      });
     }
   }
 
@@ -150,13 +159,20 @@ class _HomePageState extends State<HomePage> {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              quote,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  quote,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (_isSharing) CircularProgressIndicator(), // Show loading indicator
+              ],
             ),
           ),
         ),
@@ -168,6 +184,9 @@ class _HomePageState extends State<HomePage> {
           if (await Vibration.hasVibrator() != null) {
             Vibration.vibrate(duration: 50);
           }
+          setState(() {
+            isFavorite = false; // Reset favorite status
+          });
           _fetchQuote(); // Refresh the quotes
         },
         child: const Icon(Icons.refresh), // Central floating button
@@ -177,7 +196,6 @@ class _HomePageState extends State<HomePage> {
         notchMargin: 0.0,
         clipBehavior: Clip.antiAlias,
         color: Colors.deepOrange.shade300,
-        // Updated color to match the theme
         child: SafeArea(
           child: SizedBox(
             height: 60, // Adjust height as necessary
@@ -202,8 +220,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Expanded(
                   child: _buildNavItem(
-                    icon: Image.asset(
-                        'assets/icons/send_icon.png', height: 36),
+                    icon: Image.asset('assets/icons/send_icon.png', height: 36),
                     onPressed: () async {
                       if (await Vibration.hasVibrator() != null) {
                         Vibration.vibrate(duration: 50);
@@ -215,20 +232,22 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(width: 40), // Space for the FAB
                 Expanded(
                   child: _buildNavItem(
-                    icon: Image.asset(
-                        'assets/icons/favorite_icon.png', height: 30),
-                    onPressed: () async {
-                      if (await Vibration.hasVibrator() != null) {
-                        Vibration.vibrate(duration: 50);
-                      }
-                      // Add your favorite functionality here
+                    icon: isFavorite
+                        ? Image.asset('assets/icons/favorite_icon.png', height: 30)
+                        : Image.asset('assets/icons/favorite_filled.png', height: 30),
+                    onPressed: () {
+                      setState(() {
+                        if (!isFavorite) {
+                          isFavorite = true;
+                          _showSnackBar('Thanks for liking the quote!'); // Show Snackbar only when favorited
+                        }
+                      });
                     },
                   ),
                 ),
                 Expanded(
                   child: _buildNavItem(
-                    icon: Image.asset(
-                        'assets/icons/settings_icon.png', height: 30),
+                    icon: Image.asset('assets/icons/settings_icon.png', height: 30),
                     onPressed: () async {
                       if (await Vibration.hasVibrator() != null) {
                         Vibration.vibrate(duration: 50);
@@ -249,6 +268,19 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.all(16), // Spacing from the edges
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   Widget _buildNavItem({
     required Widget icon,
     required VoidCallback onPressed,

@@ -1,10 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:home_widget/home_widget.dart';
+import 'package:workmanager/workmanager.dart';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled5/pages/home_page.dart';
 import 'package:untitled5/introPages/first_welcome.dart';
 import 'package:untitled5/introPages/intro_name.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart'; // OneSignal import
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    // Initialize Firebase if not already initialized
+    try {
+      await Firebase.initializeApp();
+
+      // Fetch a random quote from Firebase
+      final DatabaseReference _quoteRef = FirebaseDatabase.instance.ref('quotes/0/text');
+      DataSnapshot snapshot = await _quoteRef.get();
+
+      if (snapshot.exists) {
+        Map<String, dynamic> quotes = Map<String, dynamic>.from(snapshot.value as Map);
+        List<String> quoteList = quotes.values.toList().cast<String>();
+
+        String randomQuote = quoteList[Random().nextInt(quoteList.length)];
+
+        // Save the quote in HomeWidget storage and update the widget
+        await HomeWidget.saveWidgetData<String>('quote', randomQuote);
+        await HomeWidget.updateWidget(
+          name: 'QuoteHomeWidgetProvider',
+          androidName: 'QuoteHomeWidgetProvider',
+        );
+      } else {
+        print("No quotes found in Firebase.");
+      }
+    } catch (e) {
+      print("Error in WorkManager task: $e");
+    }
+
+    return Future.value(true);
+  });
+}
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,12 +51,18 @@ void main() async {
   await Firebase.initializeApp();
 
   // Initialize OneSignal
-  OneSignal.shared.setAppId("2baf62e7-967f-4a53-9412-e8c4df05f45c");
+  OneSignal.shared.setAppId("8de30895-cf2a-46e9-b898-5782813f5be6");
 
-  // Optional: Prompt the user for notification permission
-  OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
-    print("Permission accepted: $accepted");
-  });
+
+  // Initialize WorkManager
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+
+  // Schedule periodic background task to fetch and update the widget
+  Workmanager().registerPeriodicTask(
+    "1", // Unique task name
+    "fetchAndUpdateQuote", // Task name
+    frequency: const Duration(minutes: 270), // Minimum is 15 minutes
+  );
 
   runApp(const MyApp());
 }
@@ -39,68 +83,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-//
-// class CheckIntroStatus extends StatefulWidget {
-//   const CheckIntroStatus({super.key});
-//
-//   @override
-//   _CheckIntroStatusState createState() => _CheckIntroStatusState();
-// }
-//
-// class _CheckIntroStatusState extends State<CheckIntroStatus> {
-//   UserService userService = UserService();
-//   UserData? userData;
-//   List<String> selectedCategories = [];
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _loadUserDataAndGoToIntro();
-//   }
-//
-//   void _loadUserDataAndGoToIntro() async {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     String name = prefs.getString('name') ?? 'Not Set';
-//     int age = prefs.getInt('age') ?? 0;
-//
-//     // Ensure categories are loaded as a list
-//     List<String> categories = prefs.getStringList('selectedCategories') ?? [];
-//
-//     String frequency = prefs.getString('frequency') ?? '';
-//     String notificationTime = prefs.getString('notificationTime') ?? '';
-//
-//     userData = UserData(
-//       name: name,
-//       age: age,
-//       selectedCategories: categories,
-//       frequency: frequency,
-//       notificationTime: notificationTime,
-//     );
-//
-//     // Initialize notifications with userData
-//     await NotificationService().initNotification(context, userData!.name);
-//
-//     // Navigate to the WelcomePage
-//     Navigator.pushReplacement(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => const WelcomePage(),
-//       ),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Scaffold(
-//       body: Center(child: CircularProgressIndicator()),
-//     );
-//   }
-//
-//   void _completeIntro() async {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     await prefs.setBool('isFirstLaunch', false);
-//   }
-// }
 
 class CheckIntroStatus extends StatefulWidget {
   const CheckIntroStatus({super.key});
@@ -110,7 +92,7 @@ class CheckIntroStatus extends StatefulWidget {
 }
 
 class _CheckIntroStatusState extends State<CheckIntroStatus> {
-  bool _isFirstLaunch = true;  // Default value
+  bool _isFirstLaunch = true; // Default value
   List<String> selectedCategories = [];
 
   @override
@@ -151,15 +133,13 @@ class _CheckIntroStatusState extends State<CheckIntroStatus> {
   @override
   Widget build(BuildContext context) {
     return _isFirstLaunch
-        ? const WelcomePage()  // Show intro if first launch
-        : HomePage(selectedCategories: selectedCategories);  // Otherwise, go to home page
+        ? const WelcomePage() // Show intro if first launch
+        : HomePage(selectedCategories: selectedCategories); // Otherwise, go to home page
   }
 }
-
 
 // Update this method in the last intro page to mark the intro as completed
 void _completeIntro() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isFirstLaunch', false);  // Ensure this is saved
+  await prefs.setBool('isFirstLaunch', false); // Ensure this is saved
 }
-

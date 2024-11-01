@@ -5,50 +5,44 @@ class QuoteManager {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
 
   // Fetch a random quote based on the user's selected categories
-  Future<String> fetchQuoteFromDatabase() async {
+  Future<String> fetchQuoteFromDatabase(List<String>? selectedCategories) async {
     String quote = "This is your quote."; // Default quote in case of failure
+
     try {
-      // Retrieve the user's name from SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? userName = prefs.getString('name');
+      if (selectedCategories == null || selectedCategories.isEmpty) {
+        print("No categories selected.");
+        return quote;
+      }
 
-      if (userName != null && userName.isNotEmpty) {
-        // Get the user's selected categories from Firebase
-        DatabaseEvent userEvent = await _dbRef.child('users/$userName/selectedCategories').once();
+      // Fetch quotes that match the selected categories
+      DatabaseEvent quotesEvent = await _dbRef.child('quotes').once();
+      if (quotesEvent.snapshot.exists && quotesEvent.snapshot.value is Map) {
+        Map<String, dynamic> allQuotes = quotesEvent.snapshot.value as Map<String, dynamic>;
 
-        // Check if the snapshot exists and is a List
-        if (userEvent.snapshot.exists && userEvent.snapshot.value != null) {
-          final dynamic value = userEvent.snapshot.value;
-          if (value is List) {
-            // Cast to List<String>
-            List<String> selectedCategories = List<String>.from(value);
+        // Filter quotes by the user's selected categories
+        List<String> filteredQuotes = allQuotes.entries
+            .where((entry) => selectedCategories.contains(entry.key)) // Filter by category
+            .expand((entry) {
+          // Assuming each entry is a map with 'text' field containing multiple quotes
+          var quotesMap = entry.value as Map<String, dynamic>;
+          return quotesMap.values.map((quoteEntry) => quoteEntry['text'] as String).toList();
+        })
+            .toList();
 
-            if (selectedCategories.isNotEmpty) {
-              // Fetch quotes that match the selected categories
-              DatabaseEvent quotesEvent = await _dbRef.child('quotes').once();
-              if (quotesEvent.snapshot.exists && quotesEvent.snapshot.value is Map) {
-                Map<String, dynamic> allQuotes = quotesEvent.snapshot.value as Map<String, dynamic>;
-
-                // Filter quotes by the user's selected categories
-                List<String> filteredQuotes = allQuotes.entries
-                    .where((entry) => selectedCategories.contains(entry.key)) // Filter by category
-                    .map((entry) => entry.value.toString())
-                    .toList();
-
-                // Randomize and pick one quote
-                quote = filteredQuotes.isNotEmpty ? (filteredQuotes..shuffle()).first : quote;
-              }
-            }
-          } else {
-            print("Selected categories is not a list.");
-          }
+        // Randomize and pick one quote
+        if (filteredQuotes.isNotEmpty) {
+          filteredQuotes.shuffle();
+          quote = filteredQuotes.first;
         } else {
-          print("User event does not exist or has no value.");
+          print("No quotes found for selected categories.");
         }
+      } else {
+        print("No quotes found in the database.");
       }
     } catch (e) {
       print("Error fetching quote: $e");
     }
+
     return quote;
   }
 }

@@ -16,7 +16,11 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  Future<void> initNotification(BuildContext context, String userId) async {
+  Future<void> cancelNotification() async {
+    await _flutterLocalNotificationsPlugin.cancelAll(); // Cancels all notifications
+  }
+
+  Future<void> initNotification(BuildContext context, String userName) async {
     // Initialize local notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -46,12 +50,23 @@ class NotificationService {
     print('FCM Token: $token');
 
     // Save the FCM token to Firebase Database
-    await saveFcmTokenToDatabase(token, userId);
+    //await saveFcmTokenToDatabase(token, userName);
 
     // Listen for foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      _showNotification(message);
+      _handleIncomingMessage(message);
     });
+  }
+
+  Future<void> _handleIncomingMessage(RemoteMessage message) async {
+    // Check if the message is related to widget quote updates
+    if (message.data['type'] == 'widget_quote_update') {
+      print('Skipping widget quote update notification.');
+      return; // Don't show notification for widget quote updates
+    }
+
+    // Show notification for other messages
+    await _showNotification(message);
   }
 
   Future<void> _showNotification(RemoteMessage message) async {
@@ -79,19 +94,19 @@ class NotificationService {
     );
   }
 
-  Future<void> saveFcmTokenToDatabase(String? token, String userId) async {
-    if (token == null) return;
-
-    try {
-      DatabaseReference userRef = FirebaseDatabase.instance.ref('users/$userId');
-      await userRef.update({'fcmToken': token});
-    } catch (e) {
-      print('Error saving FCM token: $e');
-    }
-  }
-
   Future<void> setupNotificationForUser(String userId) async {
     // Logic for scheduling notifications or setting user preferences
     // (to be implemented in Firebase Cloud Functions or backend logic)
   }
+
+// Future<void> saveFcmTokenToDatabase(String? token, String userName) async {
+//   if (token == null) return;
+//
+//   try {
+//     DatabaseReference userRef = FirebaseDatabase.instance.ref('users/$userName');
+//     await userRef.update({'fcmToken': token});
+//   } catch (e) {
+//     print('Error saving FCM token: $e');
+//   }
+// }
 }

@@ -41,54 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDCvsrD7m_-ITB-pE0hk9YHwwnbfPrrhhs',
-    appId: '1:941534078452:web:84ba177d7a7f43ea8cc5a1',
-    messagingSenderId: '941534078452',
-    projectId: 'leoq-cc59a',
-    authDomain: 'leoq-cc59a.firebaseapp.com',
-    databaseURL: 'https://leoq-cc59a-default-rtdb.firebaseio.com',
-    storageBucket: 'leoq-cc59a.appspot.com',
-    measurementId: 'G-FY3BNM2MEY',
+    apiKey: 'AIzaSyDyoKTPls4EcfbNmtjYDuBUiivlWsgHqkk',
+    appId: '1:377200756049:web:b6633ecf1d2c72d7b9ff70',
+    messagingSenderId: '377200756049',
+    projectId: 'leoquotes-3a403',
+    authDomain: 'leoquotes-3a403.firebaseapp.com',
+    storageBucket: 'leoquotes-3a403.appspot.com',
+    measurementId: 'G-28NYKXFECE',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBkMPp9jQQignTUCxUCTwOoVlOxwb36Xrk',
-    appId: '1:941534078452:android:41ded1c0b339a62f8cc5a1',
-    messagingSenderId: '941534078452',
-    projectId: 'leoq-cc59a',
-    databaseURL: 'https://leoq-cc59a-default-rtdb.firebaseio.com',
-    storageBucket: 'leoq-cc59a.appspot.com',
+    apiKey: 'AIzaSyDNFnoBpqcOBHkZjY1f0yqcbwE1LDabrcA',
+    appId: '1:377200756049:android:5693bbaee6a4a7d9b9ff70',
+    messagingSenderId: '377200756049',
+    projectId: 'leoquotes-3a403',
+    storageBucket: 'leoquotes-3a403.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyALAIjcFLcxauQM_EmZhC3DAfyTY6HAZ18',
-    appId: '1:941534078452:ios:2386ad23f88837f68cc5a1',
-    messagingSenderId: '941534078452',
-    projectId: 'leoq-cc59a',
-    databaseURL: 'https://leoq-cc59a-default-rtdb.firebaseio.com',
-    storageBucket: 'leoq-cc59a.appspot.com',
+    apiKey: 'AIzaSyB1jrrpZpdCDk0nJnHeQ--nBxKLU3i8q8U',
+    appId: '1:377200756049:ios:9634e9242e49e72fb9ff70',
+    messagingSenderId: '377200756049',
+    projectId: 'leoquotes-3a403',
+    storageBucket: 'leoquotes-3a403.appspot.com',
     iosBundleId: 'com.example.untitled5',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyALAIjcFLcxauQM_EmZhC3DAfyTY6HAZ18',
-    appId: '1:941534078452:ios:2386ad23f88837f68cc5a1',
-    messagingSenderId: '941534078452',
-    projectId: 'leoq-cc59a',
-    databaseURL: 'https://leoq-cc59a-default-rtdb.firebaseio.com',
-    storageBucket: 'leoq-cc59a.appspot.com',
+    apiKey: 'AIzaSyB1jrrpZpdCDk0nJnHeQ--nBxKLU3i8q8U',
+    appId: '1:377200756049:ios:9634e9242e49e72fb9ff70',
+    messagingSenderId: '377200756049',
+    projectId: 'leoquotes-3a403',
+    storageBucket: 'leoquotes-3a403.appspot.com',
     iosBundleId: 'com.example.untitled5',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDCvsrD7m_-ITB-pE0hk9YHwwnbfPrrhhs',
-    appId: '1:941534078452:web:e380103b3269523b8cc5a1',
-    messagingSenderId: '941534078452',
-    projectId: 'leoq-cc59a',
-    authDomain: 'leoq-cc59a.firebaseapp.com',
-    databaseURL: 'https://leoq-cc59a-default-rtdb.firebaseio.com',
-    storageBucket: 'leoq-cc59a.appspot.com',
-    measurementId: 'G-CZ62YJ9SE7',
+    apiKey: 'AIzaSyDyoKTPls4EcfbNmtjYDuBUiivlWsgHqkk',
+    appId: '1:377200756049:web:8956ebc1d437410db9ff70',
+    messagingSenderId: '377200756049',
+    projectId: 'leoquotes-3a403',
+    authDomain: 'leoquotes-3a403.firebaseapp.com',
+    storageBucket: 'leoquotes-3a403.appspot.com',
+    measurementId: 'G-S8PQYRDDK8',
   );
 
 }

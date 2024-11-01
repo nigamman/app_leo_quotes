@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Platform channel communication
 import 'package:google_fonts/google_fonts.dart'; // Custom fonts
 import 'package:untitled5/services/quote_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // SharedPreferences
@@ -15,8 +14,8 @@ class CategoriesPage extends StatefulWidget {
 class _CategoriesPageState extends State<CategoriesPage> {
   List<String> selectedCategories = [];
   bool isSelectionSaved = false;
-  static const platform = MethodChannel('com.example.untitled5/appwidget');
   final QuoteManager _quoteManager = QuoteManager();
+  double _opacity = 0.0; // Variable to control opacity
 
   @override
   void initState() {
@@ -32,6 +31,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       setState(() {
         selectedCategories = savedCategories;
         isSelectionSaved = true; // Set to true if categories were loaded
+        _opacity = 1.0; // Change opacity to fully visible
       });
     }
   }
@@ -44,10 +44,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
       isSelectionSaved = true;
     });
 
-    // Fetch and save quote
-    String fetchedQuote = await _quoteManager.fetchQuoteFromDatabase();
-    await _saveQuoteToPreferences(fetchedQuote);
-    await _updateWidgetWithQuote(fetchedQuote);
+    // Fetch and save a random quote from Firebase
+    String fetchedQuote = await _quoteManager.fetchQuoteFromDatabase(selectedCategories);
 
     // Show confirmation SnackBar
     ScaffoldMessenger.of(context).showSnackBar(
@@ -57,9 +55,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
     );
 
-    // Wait for SnackBar to finish before navigating
-    await Future.delayed(const Duration(seconds: 2));
-
     // Navigate to HomePage with selected categories
     Navigator.pushAndRemoveUntil(
       context,
@@ -68,24 +63,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
           (Route<dynamic> route) => false, // Remove all previous routes
     );
-  }
-
-// Move this method outside of _saveSelectedCategories
-  Future<void> _saveQuoteToPreferences(String quote) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedQuote', quote);
-  }
-
-
-  Future<void> _updateWidgetWithQuote(String quote) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('selectedQuote', quote);
-      print("Saving quote: $quote");  // Log the saved quote
-      await platform.invokeMethod('updateWidget', {"quote": quote});
-    } on PlatformException catch (e) {
-      print("Failed to update widget: '${e.message}'");
-    }
   }
 
   void _toggleCategorySelection(String categoryName) {
@@ -164,6 +141,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool canShowSaveButton = selectedCategories.isNotEmpty && !isSelectionSaved;
+
     return Scaffold(
       backgroundColor: Colors.orange.shade50,
       appBar: AppBar(
@@ -171,56 +150,63 @@ class _CategoriesPageState extends State<CategoriesPage> {
         backgroundColor: Colors.deepOrange.shade700,
         elevation: 0,
       ),
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-        ),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = selectedCategories.contains(category.name);
+      body: AnimatedOpacity(
+        opacity: _opacity,
+        duration: const Duration(milliseconds: 500), // Duration of the fade-in animation
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+          ),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            final isSelected = selectedCategories.contains(category.name);
 
-          return GestureDetector(
-            onTap: () {
-              _toggleCategorySelection(category.name);
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.deepOrangeAccent[700] : Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    category.iconPath,
-                    height: 60,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    category.name,
-                    style: GoogleFonts.dancingScript(
-                      fontSize: 25,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
+            return GestureDetector(
+              onTap: () {
+                _toggleCategorySelection(category.name);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.deepOrangeAccent[700] : Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 3),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      category.iconPath,
+                      height: 60,
+                    ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        category.name,
+                        style: GoogleFonts.dancingScript(
+                          fontSize: 25,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center, // Center-align the text within the Text widget
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
-      floatingActionButton: selectedCategories.isNotEmpty && !isSelectionSaved
+      floatingActionButton: canShowSaveButton
           ? ElevatedButton(
         onPressed: _saveSelectedCategories,
         style: ElevatedButton.styleFrom(

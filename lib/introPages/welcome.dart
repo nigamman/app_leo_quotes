@@ -5,7 +5,7 @@ import 'package:untitled5/models/user_data.dart';
 import 'package:untitled5/pages/home_page.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:confetti/confetti.dart'; // Add this import
+import 'package:confetti/confetti.dart';
 
 class WelcomePage extends StatefulWidget {
   final UserData userData;
@@ -17,53 +17,53 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin {
-  bool _isLoading = false; // Loading state
-  String greetingText = ''; // Text for greeting message
-  late ConfettiController _confettiController; // Confetti controller
-  late AnimationController _appNameController; // App name animation controller
-  late AnimationController _iconController; // Icon animation controller
-  late Animation<Offset> _appNameOffsetAnimation; // App name animation
-  late Animation<double> _iconScaleAnimation; // Icon scale animation
+  bool _isLoading = false;
+  bool _isButtonEnabled = false;  // To control when the button becomes enabled
+  String greetingText = '';
+  late ConfettiController _confettiController;
+  late AnimationController _logoController;
+  late AnimationController _progressController;
+  late Animation<double> _progressAnimation;
+  bool _isLogoControllerInitialized = false;
 
   @override
   void initState() {
     super.initState();
 
-    // App Name Animation
-    _appNameController = AnimationController(
+    // Logo Animation Controller
+    _logoController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);  // Ensuring it repeats back and forth
+    _isLogoControllerInitialized = true;
+
+    // Progress Bar Animation Controller
+    _progressController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     );
-    _appNameOffsetAnimation = Tween<Offset>(
-      begin: const Offset(-1.5, 0.0),
-      end: const Offset(0.0, 0.0),
-    ).animate(
-      CurvedAnimation(
-        parent: _appNameController,
-        curve: Curves.easeInOut,
-      ),
-    );
-    _appNameController.forward(); // Start the app name animation
 
-    // App Icon Animation
-    _iconController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
     );
-    _iconScaleAnimation = Tween<double>(begin: 0.8, end: 1.1).animate(
-      CurvedAnimation(parent: _iconController, curve: Curves.elasticOut),
-    );
-    _iconController.repeat(reverse: true); // Repeat the icon animation
+    _progressController.forward();  // Start the progress animation
 
     _startTypingGreeting();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 7)); // Initialize confetti controller
+    _confettiController = ConfettiController(duration: const Duration(seconds: 4));  // Confetti shortened
+
+    // Enable the button after 4 seconds to allow animations to complete
+    Future.delayed(const Duration(seconds: 4), () {
+      setState(() {
+        _isButtonEnabled = true;
+      });
+    });
   }
 
   @override
   void dispose() {
-    _confettiController.dispose(); // Dispose of the confetti controller
-    _appNameController.dispose(); // Dispose app name animation controller
-    _iconController.dispose(); // Dispose icon animation controller
+    _confettiController.dispose();  // Clean up confetti
+    _logoController.dispose();  // Clean up logo animation
+    _progressController.dispose();  // Clean up progress animation
     super.dispose();
   }
 
@@ -73,7 +73,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     String welcomeMessage = 'Welcome back, $name!';
     int currentIndex = 0;
 
-    // Timer to simulate typewriter effect
     Timer.periodic(const Duration(milliseconds: 200), (timer) {
       if (currentIndex < welcomeMessage.length) {
         setState(() {
@@ -82,12 +81,31 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
         });
       } else {
         timer.cancel();
-        _confettiController.play(); // Play confetti animation when greeting is complete
+        _confettiController.play();  // Play confetti when greeting is done
       }
     });
   }
 
-  // Function to save user data to Firebase
+  Future<void> _completeIntro(BuildContext context) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isFirstLaunch', false);  // Mark intro as completed
+
+      await _saveUserData(widget.userData);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(
+            selectedCategories: widget.userData.selectedCategories ?? [],  // Navigate to HomePage
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error completing intro: $e');
+    }
+  }
+
   Future<void> _saveUserData(UserData userData) async {
     try {
       if (userData.name.isEmpty || userData.age <= 0) {
@@ -105,42 +123,11 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     }
   }
 
-  // Function to mark intro as completed
-  Future<void> _completeIntro(BuildContext context) async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isFirstLaunch', false); // Mark intro as completed
-      print('isFirstLaunch set to false');
-
-      // Save user data to Firebase
-      await _saveUserData(widget.userData);
-
-      // Navigate to HomePage
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(
-            selectedCategories: widget.userData.selectedCategories ?? [], // Provide a default empty list if null
-          ),
-        ),
-      );
-    } catch (e) {
-      print('Error completing intro: $e');
-    }
-  }
-
-  void _toggleLoading() {
-    setState(() {
-      _isLoading = !_isLoading;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -151,94 +138,109 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
             ),
           ),
 
-          // Abstract background shapes
+          // Floating abstract shapes with shadow
           _buildAbstractShape(top: -50, left: -50, size: 200, opacity: 0.1, right: 0),
           _buildAbstractShape(top: 100, right: -30, size: 150, opacity: 0.2),
           _buildAbstractShape(top: 300, left: 80, size: 250, opacity: 0.15, right: 0),
-          _buildAbstractShape(bottom: 50, right: 50, size: 160, opacity: 0.2, top: 0),
+          _buildAbstractShape(bottom: 50, right: 50, size: 160, opacity: 0.2, top: 0.1),
 
           // Confetti widget
           ConfettiWidget(
             confettiController: _confettiController,
-            blastDirection: 3.14 / 2, // 90 degrees
+            blastDirection: 3.14 / 2,  // Blast upwards
             particleDrag: 0.05,
             emissionFrequency: 0.05,
             numberOfParticles: 20,
             gravity: 0.3,
           ),
 
-          // Animated App Name (Leo Quotes)
-          Positioned(
-            top: 60,
-            left: 16,
-            child: SlideTransition(
-              position: _appNameOffsetAnimation,
-              child: Text(
-                'Leo Quotes',
-                style: GoogleFonts.lobster(
-                  fontSize: 38,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-
-          // Main content
+          // Main Content
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Animated app icon
-                ScaleTransition(
-                  scale: _iconScaleAnimation,
-                  child: Image.asset(
-                    'assets/icons/leo_app.png', // Replace with your app icon path
-                    width: 100,
-                    height: 100,
+                // Logo with glow effect, ensuring the controller is initialized before use
+                if (_isLogoControllerInitialized)
+                  RotationTransition(
+                    turns: Tween(begin: 0.0, end: 1.0).animate(_logoController),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withOpacity(0.4),
+                            blurRadius: 25,
+                            spreadRadius: 15,
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/icons/leo_app.png',
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
                   ),
-                ),
                 const SizedBox(height: 20),
 
-                // Greeting message with typewriter effect
-                Text(
-                  greetingText,
-                  style: GoogleFonts.lobster(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                // Greeting with fly-in animation
+                AnimatedSwitcher(
+                  duration: const Duration(seconds: 1),
+                  child: Text(
+                    greetingText,
+                    key: ValueKey<String>(greetingText),
+                    style: GoogleFonts.lobster(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 30),
 
-                // Progress indicator
-                LinearProgressIndicator(
-                  value: 1.0, // Completed progress
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                // Circular Progress Bar
+                CircularProgressIndicator(
+                  value: _progressAnimation.value,
+                  strokeWidth: 8,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  backgroundColor: Colors.white.withOpacity(0.2),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Your profile is good to go!',
-                  style: TextStyle(color: Colors.white),
+                Text(
+                  '${(_progressAnimation.value * 100).toInt()}%',
+                  style: const TextStyle(color: Colors.white),
                 ),
-                const SizedBox(height: 30),
 
+                const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () async {
-                    _toggleLoading();
+                  onPressed: _isButtonEnabled
+                      ? () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
                     await _completeIntro(context);
-                    _toggleLoading();
-                  },
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
+                      : null,  // Disable button until animations are done
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     backgroundColor: Colors.deepOrange.shade50,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Go to App', style: TextStyle(color: Colors.black)),
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Go to App', style: TextStyle(color: Colors.black)),
+                      const SizedBox(width: 8),
+                      Icon(Icons.arrow_forward, color: Colors.black),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -248,7 +250,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     );
   }
 
-  // Abstract background shape method
   Widget _buildAbstractShape({
     required double top,
     required double right,

@@ -1,16 +1,18 @@
 class UserData {
   String name;
-  int age; // Define age field
-  List<String> selectedCategories; // Define selectedCategories field
-  String frequency; // Define frequency field
-  String notificationTime; // Define notificationTime field
+  int age;
+  List<String> selectedCategories;
+  String frequency;
+  String notificationTime;
+  String fcmToken; // Add fcmToken field
 
   UserData({
     required this.name,
     required this.age,
     required this.selectedCategories,
     required this.frequency,
-    required this.notificationTime, // Add notificationTime to the constructor
+    required this.notificationTime,
+    required this.fcmToken, // Add fcmToken to the constructor
   });
 
   // From Firebase JSON
@@ -20,7 +22,8 @@ class UserData {
       age: json['age'] ?? 0,
       selectedCategories: List<String>.from(json['selectedCategories'] ?? []),
       frequency: json['frequency'] ?? '',
-      notificationTime: json['notificationTime'] ?? '', // Deserialize notificationTime
+      notificationTime: json['notificationTime'] ?? '',
+      fcmToken: json['fcmToken'] ?? '', // Deserialize fcmToken
     );
   }
 
@@ -31,7 +34,8 @@ class UserData {
       'age': age,
       'selectedCategories': selectedCategories,
       'frequency': frequency,
-      'notificationTime': notificationTime, // Serialize notificationTime
+      'notificationTime': notificationTime,
+      'fcmToken': fcmToken, // Serialize fcmToken
     };
   }
 }
