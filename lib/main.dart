@@ -53,8 +53,9 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  // Initialize OneSignal
-  OneSignal.shared.setAppId("8de30895-cf2a-46e9-b898-5782813f5be6");
+  // Initialize OneSignal for SDK 5.x or later
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+  OneSignal.initialize("8de30895-cf2a-46e9-b898-5782813f5be6");
 
   // Initialize WorkManager
   Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
@@ -71,7 +72,7 @@ void main() async {
       requiresCharging: false,
     ),
   );
-
+  FirebaseDatabase.instance.setPersistenceEnabled(true);
   runApp(const MyApp());
 }
 

@@ -54,8 +54,8 @@ dependencies:
   confetti:
   timezone:
   easy_permissions_handler:
-  firebase_messaging: ^14.0.0
-  onesignal_flutter: ^3.0.0
+  firebase_messaging: ^14.7.10
+  onesignal_flutter: ^5.2.7
   home_widget: ^0.7.0
   dart_firebase_functions:
   workmanager:

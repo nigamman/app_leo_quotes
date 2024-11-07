@@ -24,3 +24,11 @@
 
 # Optional: If using Kotlin coroutines or other async processing, keep these classes
 -keep class kotlinx.coroutines.** { *; }
+
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+
