@@ -1,9 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
             android:label="Leo Quotes"
@@ -11,9 +13,8 @@
             android:icon="@mipmap/ic_launcher"
             android:enableOnBackInvokedCallback="true">
 
-        <meta-data
-                android:name="flutterEmbedding"
-                android:value="2" />
+        <!-- Flutter-specific metadata -->
+        <meta-data android:name="flutterEmbedding" android:value="2" />
 
         <activity
                 android:name=".MainActivity"
@@ -34,17 +35,11 @@
         </activity>
 
         <!-- OneSignal configuration -->
-        <meta-data
-                android:name="com.onesignal.NotificationServiceExtension"
-                android:value="com.example.untitled5.OneSignalNotificationService" />
-        <meta-data
-                android:name="com.onesignal.suppressLaunchURLs"
-                android:value="true" />
-        <meta-data
-                android:name="com.onesignal.AppId"
-                android:value="2baf62e7-967f-4a53-9412-e8c4df05f45c" />
+        <meta-data android:name="com.onesignal.NotificationServiceExtension" android:value="com.example.untitled5.OneSignalNotificationService" />
+        <meta-data android:name="com.onesignal.suppressLaunchURLs" android:value="true" />
+        <meta-data android:name="com.onesignal.AppId" android:value="2baf62e7-967f-4a53-9412-e8c4df05f45c" />
 
-        <!-- QuoteHomeWidgetProvider receiver -->
+        <!-- QuoteHomeWidgetProvider receiver configuration -->
         <receiver
                 android:name=".QuoteHomeWidgetProvider"
                 android:exported="true">
@@ -57,12 +52,15 @@
                     android:resource="@xml/quote_widget_info" />
         </receiver>
 
+        <!-- WorkManager BootReceiver to restart tasks after reboot -->
+        <receiver
+                android:name=".BootReceiver"
+                android:enabled="true"
+                android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
-
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
 </manifest>

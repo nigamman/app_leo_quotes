@@ -160,7 +160,7 @@ class _WelcomePageState extends State<WelcomePage> {
               right: 0,
               child: Bounce(
                 infinite: true,
-                child: Center(
+                child: const Center(
                   child: Icon(
                     FontAwesomeIcons.arrowDown,
                     color: Colors.black,

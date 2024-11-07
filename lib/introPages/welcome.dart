@@ -18,7 +18,7 @@ class WelcomePage extends StatefulWidget {
 
 class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin {
   bool _isLoading = false;
-  bool _isButtonEnabled = false;  // To control when the button becomes enabled
+  bool _isButtonEnabled = false;
   String greetingText = '';
   late ConfettiController _confettiController;
   late AnimationController _logoController;
@@ -34,7 +34,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     _logoController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
-    )..repeat(reverse: true);  // Ensuring it repeats back and forth
+    )..repeat(reverse: true);
     _isLogoControllerInitialized = true;
 
     // Progress Bar Animation Controller
@@ -46,24 +46,26 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
     );
-    _progressController.forward();  // Start the progress animation
+    _progressController.forward();
 
     _startTypingGreeting();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 4));  // Confetti shortened
+    _confettiController = ConfettiController(duration: const Duration(seconds: 4));
 
-    // Enable the button after 4 seconds to allow animations to complete
-    Future.delayed(const Duration(seconds: 4), () {
-      setState(() {
-        _isButtonEnabled = true;
-      });
+    // Add a status listener to enable the button when the confetti stops
+    _confettiController.addListener(() {
+      if (_confettiController.state == ConfettiControllerState.stopped) {
+        setState(() {
+          _isButtonEnabled = true;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
-    _confettiController.dispose();  // Clean up confetti
-    _logoController.dispose();  // Clean up logo animation
-    _progressController.dispose();  // Clean up progress animation
+    _confettiController.dispose();
+    _logoController.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
@@ -81,7 +83,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
         });
       } else {
         timer.cancel();
-        _confettiController.play();  // Play confetti when greeting is done
+        _confettiController.play();
       }
     });
   }
@@ -89,7 +91,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
   Future<void> _completeIntro(BuildContext context) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isFirstLaunch', false);  // Mark intro as completed
+      await prefs.setBool('isFirstLaunch', false);
 
       await _saveUserData(widget.userData);
 
@@ -97,7 +99,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
         context,
         MaterialPageRoute(
           builder: (context) => HomePage(
-            selectedCategories: widget.userData.selectedCategories ?? [],  // Navigate to HomePage
+            selectedCategories: widget.userData.selectedCategories ?? [],
           ),
         ),
       );
@@ -137,8 +139,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
               ),
             ),
           ),
-
-          // Floating abstract shapes with shadow
           _buildAbstractShape(top: -50, left: -50, size: 200, opacity: 0.1, right: 0),
           _buildAbstractShape(top: 100, right: -30, size: 150, opacity: 0.2),
           _buildAbstractShape(top: 300, left: 80, size: 250, opacity: 0.15, right: 0),
@@ -147,7 +147,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
           // Confetti widget
           ConfettiWidget(
             confettiController: _confettiController,
-            blastDirection: 3.14 / 2,  // Blast upwards
+            blastDirection: 3.14 / 2,
             particleDrag: 0.05,
             emissionFrequency: 0.05,
             numberOfParticles: 20,
@@ -159,7 +159,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo with glow effect, ensuring the controller is initialized before use
                 if (_isLogoControllerInitialized)
                   RotationTransition(
                     turns: Tween(begin: 0.0, end: 1.0).animate(_logoController),
@@ -183,7 +182,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                   ),
                 const SizedBox(height: 20),
 
-                // Greeting with fly-in animation
                 AnimatedSwitcher(
                   duration: const Duration(seconds: 1),
                   child: Text(
@@ -198,7 +196,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                 ),
                 const SizedBox(height: 30),
 
-                // Circular Progress Bar
                 CircularProgressIndicator(
                   value: _progressAnimation.value,
                   strokeWidth: 8,
@@ -223,7 +220,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                       _isLoading = false;
                     });
                   }
-                      : null,  // Disable button until animations are done
+                      : null,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     backgroundColor: Colors.deepOrange.shade50,
@@ -233,11 +230,11 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : Row(
+                      : const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Go to App', style: TextStyle(color: Colors.black)),
-                      const SizedBox(width: 8),
+                      Text('Go to App', style: TextStyle(color: Colors.black)),
+                      SizedBox(width: 8),
                       Icon(Icons.arrow_forward, color: Colors.black),
                     ],
                   ),

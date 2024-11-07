@@ -24,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   List<String> categoryQuotes = [];
   bool isFavorite = false; // Track favorite status
   bool _isSharing = false; // Track sharing state
+  bool _isLoading = false; // Track loading state for fetching new quote
   final DatabaseReference quotesRef = FirebaseDatabase.instance.ref('quotes');
   final ScreenshotController screenshotController = ScreenshotController();
 
@@ -34,6 +35,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _fetchQuote() async {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
     try {
       DatabaseEvent event = await quotesRef.once();
       DataSnapshot snapshot = event.snapshot;
@@ -60,6 +65,10 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       setState(() {
         quote = "Error loading quotes. Please try again later.";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false; // End loading
       });
     }
   }
@@ -130,8 +139,6 @@ class _HomePageState extends State<HomePage> {
         [imageXFile],
         text: 'Download the app: https://play.google.com/store/apps/details?id=com.nigamman.leoquotes',
       );
-
-      // Optional: Show success feedback
     } catch (e) {
       print('Error sharing the image: $e');
       _showSnackBar('Failed to share the quote. Please try again.');
@@ -162,16 +169,19 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  quote,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                if (_isLoading)
+                  const CircularProgressIndicator() // Show loading indicator when fetching quote
+                else
+                  Text(
+                    quote,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 20),
-                if (_isSharing) CircularProgressIndicator(), // Show loading indicator
+                if (_isSharing) const CircularProgressIndicator(), // Show loading indicator during sharing
               ],
             ),
           ),

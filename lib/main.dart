@@ -8,26 +8,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled5/pages/home_page.dart';
 import 'package:untitled5/introPages/first_welcome.dart';
 import 'package:untitled5/introPages/intro_name.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart'; // OneSignal import
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    // Initialize Firebase if not already initialized
-    try {
+    // Initialize Firebase only if not already initialized
+    if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp();
+    }
 
+    try {
       // Fetch a random quote from Firebase
-      final DatabaseReference _quoteRef = FirebaseDatabase.instance.ref('quotes/0/text');
-      DataSnapshot snapshot = await _quoteRef.get();
+      final DatabaseReference quoteRef = FirebaseDatabase.instance.ref('quotes/2/text');
+      DataSnapshot snapshot = await quoteRef.get();
 
       if (snapshot.exists) {
         Map<String, dynamic> quotes = Map<String, dynamic>.from(snapshot.value as Map);
         List<String> quoteList = quotes.values.toList().cast<String>();
-
         String randomQuote = quoteList[Random().nextInt(quoteList.length)];
 
         // Save the quote in HomeWidget storage and update the widget
         await HomeWidget.saveWidgetData<String>('quote', randomQuote);
+        print("Quote saved in widget storage: $randomQuote"); // Debug log for confirmation
         await HomeWidget.updateWidget(
           name: 'QuoteHomeWidgetProvider',
           androidName: 'QuoteHomeWidgetProvider',
@@ -43,16 +45,16 @@ void callbackDispatcher() {
   });
 }
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
-  await Firebase.initializeApp();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
 
   // Initialize OneSignal
   OneSignal.shared.setAppId("8de30895-cf2a-46e9-b898-5782813f5be6");
-
 
   // Initialize WorkManager
   Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
@@ -61,7 +63,13 @@ void main() async {
   Workmanager().registerPeriodicTask(
     "1", // Unique task name
     "fetchAndUpdateQuote", // Task name
-    frequency: const Duration(minutes: 270), // Minimum is 15 minutes
+    frequency: const Duration(minutes: 270), // Every 4.5 hours
+    constraints: Constraints(
+      networkType: NetworkType.connected,
+      requiresBatteryNotLow: false,
+      requiresDeviceIdle: false,
+      requiresCharging: false,
+    ),
   );
 
   runApp(const MyApp());

@@ -19,10 +19,9 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
 
   Future<void> _storeFrequency(String selectedFrequency) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedFrequency', selectedFrequency); // Save the frequency
+    await prefs.setString('selectedFrequency', selectedFrequency);
   }
 
-// Call this method when the user selects a frequency
   void _onFrequencySelected(String frequency) {
     setState(() {
       _selectedFrequency = frequency;
@@ -50,7 +49,7 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
           _buildAbstractShape(top: -50, left: -50, size: 200, opacity: 0.1),
           _buildAbstractShape(top: 100, right: -30, size: 150, opacity: 0.2),
           _buildAbstractShape(top: 300, left: 80, size: 250, opacity: 0.15),
-          _buildAbstractShape(bottom: 50, right: 50, size: 160, opacity: 0.2,top: 0),
+          _buildAbstractShape(bottom: 50, right: 50, size: 160, opacity: 0.2, top: 0),
 
           // Main content
           Padding(
@@ -104,7 +103,7 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
                 // Progress indicator
                 FadeInUp(
                   child: LinearProgressIndicator(
-                    value: 4/6, // Example progress, page 4 of 6
+                    value: 4 / 6, // Example progress, page 4 of 6
                     backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -113,16 +112,28 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
 
                 // Frequency Options with custom styling
                 Expanded(
-                  child: Wrap(
-                    spacing: 16.0, // Horizontal spacing between items
-                    runSpacing: 16.0, // Vertical spacing when items wrap to the next line
-                    alignment: WrapAlignment.center, // Center-align items within the wrap
-                    children: [
-                      _buildFrequencyCard('Every 3 hours', Colors.orange),
-                      _buildFrequencyCard('Every 6 hours', Colors.orange),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      double cardWidth = (constraints.maxWidth / 2) - 20; // Adjust width
+                      return Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 20, // Space between the cards
+                        runSpacing: 20, // Space between rows
+                        children: [
+                          SizedBox(
+                            width: cardWidth,
+                            child: _buildFrequencyCard('Every 3 hours', Colors.orange),
+                          ),
+                          SizedBox(
+                            width: cardWidth,
+                            child: _buildFrequencyCard('Every 6 hours', Colors.orange),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
+
                 const SizedBox(height: 30),
 
                 // Motivational quote
@@ -182,42 +193,42 @@ class _IntroPageFrequencyState extends State<IntroPageFrequency> {
   }
 
   // Custom frequency card
+// Inside your _buildFrequencyCard method
   Widget _buildFrequencyCard(String title, Color color) {
     return GestureDetector(
       onTap: () {
-        _onFrequencySelected(title); // Call this to update the state and store frequency
+        _onFrequencySelected(title);
       },
-      // onTap: () {
-      //   setState(() {
-      //     _selectedFrequency = title;
-      //   });
-      // },
       child: Card(
         elevation: _selectedFrequency == title ? 8 : 2,
         color: _selectedFrequency == title ? color : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                _selectedFrequency == title ? Icons.check_circle : Icons.circle,
-                color: _selectedFrequency == title ? Colors.white : Colors.black,
-                size: 40,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  color: _selectedFrequency == title ? Colors.white : Colors.deepOrange,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+        child: Center( // Center the content within the card
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
+              children: [
+                Icon(
+                  _selectedFrequency == title ? Icons.check_circle : Icons.circle,
+                  color: _selectedFrequency == title ? Colors.white : Colors.white30,
+                  size: 40,
                 ),
-              ),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: _selectedFrequency == title ? Colors.white : Colors.deepOrange,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center, // Center the text horizontally
+                ),
+              ],
+            ),
           ),
         ),
       ),

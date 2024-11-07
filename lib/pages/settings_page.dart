@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:untitled5/services/notification_service.dart';
-import 'package:untitled5/services/user_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
 
 class SettingsPage extends StatefulWidget {
@@ -180,7 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildInfoRow('Name', _name, Icon(Icons.person, color: Colors.deepOrange)),
+                  _buildInfoRow('Name', _name, const Icon(Icons.person, color: Colors.deepOrange)),
                   const SizedBox(height: 20),
                   _buildInfoRow('Age', _age.toString(), const Icon(Icons.cake, color: Colors.deepOrange)),
                   const SizedBox(height: 20),
