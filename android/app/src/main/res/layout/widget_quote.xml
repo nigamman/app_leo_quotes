@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/widget_layout_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:padding="5dp"
+        android:orientation="vertical"
         android:background="@drawable/rounded_widget_background"
         android:gravity="center">
 
@@ -13,7 +12,8 @@
             android:id="@+id/widget_quote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Loading quote..."
             android:textSize="24sp"
-            android:textColor="#FFFFFF"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:textColor="#FFFFFF" />
 </LinearLayout>

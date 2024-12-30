@@ -1,77 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:home_widget/home_widget.dart';
-import 'package:workmanager/workmanager.dart';
-import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled5/pages/home_page.dart';
 import 'package:untitled5/introPages/first_welcome.dart';
 import 'package:untitled5/introPages/intro_name.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    // Initialize Firebase only if not already initialized
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp();
-    }
-
-    try {
-      // Fetch a random quote from Firebase
-      final DatabaseReference quoteRef = FirebaseDatabase.instance.ref('quotes/2/text');
-      DataSnapshot snapshot = await quoteRef.get();
-
-      if (snapshot.exists) {
-        Map<String, dynamic> quotes = Map<String, dynamic>.from(snapshot.value as Map);
-        List<String> quoteList = quotes.values.toList().cast<String>();
-        String randomQuote = quoteList[Random().nextInt(quoteList.length)];
-
-        // Save the quote in HomeWidget storage and update the widget
-        await HomeWidget.saveWidgetData<String>('quote', randomQuote);
-        print("Quote saved in widget storage: $randomQuote"); // Debug log for confirmation
-        await HomeWidget.updateWidget(
-          name: 'QuoteHomeWidgetProvider',
-          androidName: 'QuoteHomeWidgetProvider',
-        );
-      } else {
-        print("No quotes found in Firebase.");
-      }
-    } catch (e) {
-      print("Error in WorkManager task: $e");
-    }
-
-    return Future.value(true);
-  });
-}
+import 'package:in_app_update/in_app_update.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
-  if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp();
-  }
-
-  // Initialize OneSignal for SDK 5.x or later
+  await Firebase.initializeApp();
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
   OneSignal.initialize("8de30895-cf2a-46e9-b898-5782813f5be6");
-
-  // Initialize WorkManager
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
-
-  // Schedule periodic background task to fetch and update the widget
-  Workmanager().registerPeriodicTask(
-    "1", // Unique task name
-    "fetchAndUpdateQuote", // Task name
-    frequency: const Duration(minutes: 270), // Every 4.5 hours
-    constraints: Constraints(
-      networkType: NetworkType.connected,
-      requiresBatteryNotLow: false,
-      requiresDeviceIdle: false,
-      requiresCharging: false,
-    ),
-  );
   FirebaseDatabase.instance.setPersistenceEnabled(true);
   runApp(const MyApp());
 }
@@ -88,6 +29,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/welcome': (context) => const WelcomePage(),
         '/namePage': (context) => const IntroPageName(),
+        '/home': (context) => const HomePage(selectedCategories: []),
       },
     );
   }
@@ -101,20 +43,19 @@ class CheckIntroStatus extends StatefulWidget {
 }
 
 class _CheckIntroStatusState extends State<CheckIntroStatus> {
-  bool _isFirstLaunch = true; // Default value
-  List<String> selectedCategories = [];
+  bool _isFirstLaunch = true;
 
   @override
   void initState() {
     super.initState();
     _checkIfFirstLaunch();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkForUpdate(context); // Check for updates
+    });
   }
 
-  // Check if the introduction has already been shown
   void _checkIfFirstLaunch() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // Load the value of 'isFirstLaunch', default to true if not present
     bool isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
 
     if (isFirstLaunch) {
@@ -126,11 +67,9 @@ class _CheckIntroStatusState extends State<CheckIntroStatus> {
     }
   }
 
-  // Save selected categories and move to HomePage
   void _goToHomePage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    selectedCategories = prefs.getStringList('selectedCategories') ?? [];
-
+    List<String> selectedCategories = prefs.getStringList('selectedCategories') ?? [];
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -139,16 +78,37 @@ class _CheckIntroStatusState extends State<CheckIntroStatus> {
     );
   }
 
+  void checkForUpdate(BuildContext context) async {
+    try {
+      AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+        if (updateInfo.immediateUpdateAllowed) {
+          await InAppUpdate.performImmediateUpdate();
+        } else if (updateInfo.flexibleUpdateAllowed) {
+          await InAppUpdate.startFlexibleUpdate();
+          InAppUpdate.completeFlexibleUpdate();
+        }
+      }
+    } catch (e) {
+      return;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return _isFirstLaunch
-        ? const WelcomePage() // Show intro if first launch
-        : HomePage(selectedCategories: selectedCategories); // Otherwise, go to home page
+        ? const WelcomePage()
+        : FutureBuilder(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          SharedPreferences prefs = snapshot.data as SharedPreferences;
+          List<String> categories = prefs.getStringList('selectedCategories') ?? [];
+          return HomePage(selectedCategories: categories);
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
   }
-}
-
-// Update this method in the last intro page to mark the intro as completed
-void _completeIntro() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isFirstLaunch', false); // Ensure this is saved
 }

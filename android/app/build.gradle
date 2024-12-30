@@ -1,8 +1,9 @@
 plugins {
     id "com.android.application"
-    id 'com.google.gms.google-services' // FlutterFire configuration
+    id "com.google.gms.google-services" // FlutterFire configuration
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id "com.onesignal.androidsdk.onesignal-gradle-plugin" // Add OneSignal Plugin
 }
 
 def keystoreProperties = new Properties()
@@ -23,6 +24,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
+        freeCompilerArgs += "-Xlint:deprecation"
     }
 
     defaultConfig {
@@ -44,6 +46,7 @@ android {
 
     buildTypes {
         release {
+            shrinkResources false
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig = signingConfigs.release
@@ -58,7 +61,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
     implementation 'com.google.firebase:firebase-core:21.0.0'
     implementation 'com.google.firebase:firebase-database:20.0.0'
-    implementation 'com.onesignal:OneSignal:4.8.4'
+    implementation 'com.onesignal:OneSignal:[4.8.6, 5.0.0)' // OneSignal dependency
     implementation "androidx.work:work-runtime-ktx:2.8.1"
 }
 

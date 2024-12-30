@@ -100,7 +100,7 @@ class _IntroPageCategoriesState extends State<IntroPageCategories> {
                 // Progress indicator
                 FadeInUp(
                   child: LinearProgressIndicator(
-                    value: 3/6, // Example progress, page 3 of 6
+                    value: 3 / 6, // Example progress, page 3 of 6
                     backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -126,9 +126,21 @@ class _IntroPageCategoriesState extends State<IntroPageCategories> {
                           onTap: () {
                             setState(() {
                               if (isSelected) {
+                                // Remove category if it's already selected
                                 _selectedCategories.remove(category);
                               } else {
-                                _selectedCategories.add(category);
+                                if (_selectedCategories.length < 3) {
+                                  // Add category if less than 3 categories are selected
+                                  _selectedCategories.add(category);
+                                } else {
+                                  // Show message if more than 3 categories are selected
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('You can only select up to 3 categories!'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             });
                           },

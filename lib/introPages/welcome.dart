@@ -20,7 +20,8 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
   bool _isLoading = false;
   bool _isButtonEnabled = false;
   String greetingText = '';
-  late ConfettiController _confettiController;
+  late ConfettiController _leftConfettiController;
+  late ConfettiController _rightConfettiController;
   late AnimationController _logoController;
   late AnimationController _progressController;
   late Animation<double> _progressAnimation;
@@ -29,6 +30,10 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+
+    // Initialize ConfettiControllers for left and right sides
+    _leftConfettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _rightConfettiController = ConfettiController(duration: const Duration(seconds: 2));
 
     // Logo Animation Controller
     _logoController = AnimationController(
@@ -39,31 +44,32 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
 
     // Progress Bar Animation Controller
     _progressController = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 3), // Duration adjusted for smoother flow
       vsync: this,
     );
 
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
     );
-    _progressController.forward();
 
-    _startTypingGreeting();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 4));
-
-    // Add a status listener to enable the button when the confetti stops
-    _confettiController.addListener(() {
-      if (_confettiController.state == ConfettiControllerState.stopped) {
-        setState(() {
-          _isButtonEnabled = true;
-        });
-      }
+    // Start progress animation
+    _progressController.forward().whenComplete(() {
+      // Ensure confetti controllers are called after the progress bar is filled
+      _leftConfettiController.play();
+      _rightConfettiController.play();
+      setState(() {
+        _isButtonEnabled = true; // Enable button after confetti animation
+      });
     });
+
+    // Start typing greeting message
+    _startTypingGreeting();
   }
 
   @override
   void dispose() {
-    _confettiController.dispose();
+    _leftConfettiController.dispose();
+    _rightConfettiController.dispose();
     _logoController.dispose();
     _progressController.dispose();
     super.dispose();
@@ -75,7 +81,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     String welcomeMessage = 'Welcome back, $name!';
     int currentIndex = 0;
 
-    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (currentIndex < welcomeMessage.length) {
         setState(() {
           greetingText += welcomeMessage[currentIndex];
@@ -83,7 +89,6 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
         });
       } else {
         timer.cancel();
-        _confettiController.play();
       }
     });
   }
@@ -130,6 +135,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     return Scaffold(
       body: Stack(
         children: [
+          // Background Gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -139,19 +145,37 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
               ),
             ),
           ),
+
+          // Abstract Shapes
           _buildAbstractShape(top: -50, left: -50, size: 200, opacity: 0.1, right: 0),
           _buildAbstractShape(top: 100, right: -30, size: 150, opacity: 0.2),
           _buildAbstractShape(top: 300, left: 80, size: 250, opacity: 0.15, right: 0),
           _buildAbstractShape(bottom: 50, right: 50, size: 160, opacity: 0.2, top: 0.1),
 
-          // Confetti widget
-          ConfettiWidget(
-            confettiController: _confettiController,
-            blastDirection: 3.14 / 2,
-            particleDrag: 0.05,
-            emissionFrequency: 0.05,
-            numberOfParticles: 20,
-            gravity: 0.3,
+          // Left Confetti
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ConfettiWidget(
+              confettiController: _leftConfettiController,
+              blastDirection: 0, // Left blast
+              particleDrag: 0.05,
+              emissionFrequency: 0.6,
+              numberOfParticles: 10,
+              gravity: 0.5,
+            ),
+          ),
+
+          // Right Confetti
+          Align(
+            alignment: Alignment.centerRight,
+            child: ConfettiWidget(
+              confettiController: _rightConfettiController,
+              blastDirection: 3.14, // Right blast
+              particleDrag: 0.05,
+              emissionFrequency: 0.6,
+              numberOfParticles: 10,
+              gravity: 0.5,
+            ),
           ),
 
           // Main Content
@@ -159,6 +183,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Logo Animation
                 if (_isLogoControllerInitialized)
                   RotationTransition(
                     turns: Tween(begin: 0.0, end: 1.0).animate(_logoController),
@@ -180,8 +205,10 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                       ),
                     ),
                   ),
+
                 const SizedBox(height: 20),
 
+                // Greeting Message with Typewriter Animation
                 AnimatedSwitcher(
                   duration: const Duration(seconds: 1),
                   child: Text(
@@ -196,6 +223,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                 ),
                 const SizedBox(height: 30),
 
+                // Progress Bar
                 CircularProgressIndicator(
                   value: _progressAnimation.value,
                   strokeWidth: 8,
@@ -209,6 +237,8 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                 ),
 
                 const SizedBox(height: 30),
+
+                // Go to App Button
                 ElevatedButton(
                   onPressed: _isButtonEnabled
                       ? () async {
@@ -233,7 +263,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                       : const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Go to App', style: TextStyle(color: Colors.black)),
+                      Text('Get Started', style: TextStyle(color: Colors.black)),
                       SizedBox(width: 8),
                       Icon(Icons.arrow_forward, color: Colors.black),
                     ],

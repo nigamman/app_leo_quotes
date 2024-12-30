@@ -208,21 +208,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
       floatingActionButton: canShowSaveButton
           ? ElevatedButton(
-        onPressed: _saveSelectedCategories,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepOrangeAccent[700],
-        ),
-        child: const Text(
-          'Save',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            fontFamily: 'Roboto',
+            onPressed: _saveSelectedCategories,
+            style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepOrangeAccent[700],
           ),
-        ),
-      )
-          : null,
+             child: const Text('Save', style: TextStyle(fontSize: 16,
+               fontWeight: FontWeight.bold, color: Colors.black, fontFamily: 'Roboto'),
+          ),
+        ) : null,
     );
   }
 }

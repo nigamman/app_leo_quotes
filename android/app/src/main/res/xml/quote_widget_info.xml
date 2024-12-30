@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-        android:minWidth="100dp"
-        android:minHeight="100dp"
-        android:updatePeriodMillis="1800000"
-        android:initialLayout="@layout/quote_widget_layout"
+<appwidget-provider
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:initialLayout="@layout/widget_quote"
+        android:updatePeriodMillis="0"
         android:resizeMode="horizontal|vertical"
-        android:widgetCategory="home_screen"
-        android:previewImage="@drawable/widget_preview_image">
-</appwidget-provider>
+        android:minWidth="100dp"
+        android:minHeight="100dp"/>
