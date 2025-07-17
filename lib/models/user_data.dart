@@ -23,7 +23,7 @@ class UserData {
       selectedCategories: List<String>.from(json['selectedCategories'] ?? []),
       frequency: json['frequency'] ?? '',
       notificationTime: json['notificationTime'] ?? '',
-      fcmToken: json['fcmToken'] ?? '', // Deserialize fcmToken
+      fcmToken: json['fcmToken'] ?? '',
     );
   }
 
@@ -35,7 +35,7 @@ class UserData {
       'selectedCategories': selectedCategories,
       'frequency': frequency,
       'notificationTime': notificationTime,
-      'fcmToken': fcmToken, // Serialize fcmToken
+      'fcmToken': fcmToken,
     };
   }
 }

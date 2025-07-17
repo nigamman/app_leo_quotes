@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:untitled5/services/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -26,6 +28,27 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     _loadUserInfo();
     _notificationService.initNotification(context, _name);
+    _checkNotificationStatus();
+  }
+  Future<void> _onToggleNotification(bool value) async {
+    if (value) {
+      await _openNotificationSettings();
+      bool isEnabled = await _notificationService.isNotificationEnabled();
+
+      setState(() {
+        isReminderEnabled = isEnabled;
+      });
+
+      if (isEnabled) {
+        await _saveReminderState(true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enable notifications in settings.')),
+        );
+      }
+    } else {
+      await _showDisableReminderDialog();
+    }
   }
 
   Future<void> _loadUserInfo() async {
@@ -64,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Turn Off Notifications'),
-          content: const Text('Do you want to turn off notifications?'),
+          content: const Text('Do you want to turn off notifications? This will open the device settings.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -78,22 +101,95 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       },
     );
+
     if (result == true) {
+      // Launch the app's notification settings page
+      await _openNotificationSettings();
+
+      // Check the notification permission status
+      bool isEnabled = await _notificationService.isNotificationEnabled();
+
+      // Update the app state based on the user's action
       setState(() {
-        isReminderEnabled = false;
+        isReminderEnabled = isEnabled;
       });
-      await _saveReminderState(false);
-      _notificationService.cancelNotification(); // Cancel notifications
+
+      if (!isEnabled) {
+        await _saveReminderState(false);
+        _notificationService.cancelNotification(); // Cancel notifications
+      }
     }
   }
 
+  Future<void> _checkNotificationStatus() async {
+    // Check if notifications are enabled at the system level
+    bool isEnabled = await _notificationService.isNotificationEnabled();
+
+    setState(() {
+      isReminderEnabled = isEnabled;
+    });
+
+    // Save the updated status to SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remindersEnabled', isEnabled);
+  }
+
+  Future<void> _openNotificationSettings() async {
+    const AndroidIntent intent = AndroidIntent(
+      action: 'android.settings.APP_NOTIFICATION_SETTINGS',
+      flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
+      arguments: {
+        'android.provider.extra.APP_PACKAGE': 'com.nigamman.leoquotes',
+      },
+    );
+    await intent.launch();
+
+    // Delay to allow the user to make changes in settings
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Recheck the notification status after returning from settings
+    await _checkNotificationStatus();
+
+    // Provide feedback to the user
+    if (!isReminderEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enable notifications in device settings.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notifications enabled successfully.')),
+      );
+    }
+  }
+
+
   // Function to launch Play Store
   Future<void> _rateApp() async {
-    const String url = 'https://play.google.com/store/apps/details?id=com.nigamman.leoquotes'; // Replace with your app's package name
+    const String url = 'https://play.google.com/store/apps/details?id=com.nigamman.leoquotes';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
+    }
+  }
+
+  // Function to launch Instagram
+  Future<void> _followUsOnInstagram() async {
+    const String instagramAppUrl = "instagram://user?username=leoquotes.app";
+    const String instagramWebUrl = "https://www.instagram.com/leoquotes.app";
+
+    try {
+      // Attempt to open the Instagram app
+      if (await canLaunchUrl(Uri.parse(instagramAppUrl))) {
+        await launchUrl(Uri.parse(instagramAppUrl));
+      } else if (await canLaunchUrl(Uri.parse(instagramWebUrl))) {
+        // Fallback to web URL
+        await launchUrl(Uri.parse(instagramWebUrl), mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch Instagram';
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
     }
   }
 
@@ -119,17 +215,12 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: isReminderEnabled ? Icons.notifications_active : Icons.notifications_off,
               subtitle: isReminderEnabled ? 'Notification is ON' : 'Notification is OFF',
               toggleValue: isReminderEnabled,
-              onToggle: (value) {
-                if (value) {
-                  setState(() => isReminderEnabled = true);
-                  _saveReminderState(true);
-                } else {
-                  _showDisableReminderDialog();
-                }
-              },
+              onToggle: _onToggleNotification,
             ),
             const SizedBox(height: 20),
-            _buildRateUsSection(), // Add Rate Us section
+            _buildRateUsSection(),
+            const SizedBox(height: 20),
+            _buildFollowUsSection(),
           ],
         ),
       ),
@@ -204,7 +295,7 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 8,
         child: ListTile(
-          leading: Image.asset('assets/icons/info.png', height: 40, width: 40),
+          leading: Image.asset('assets/icons/info.png', height: 35, width: 35),
           title: Text('Your Information', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.deepOrange),
         ),
@@ -268,7 +359,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // New Rate Us section
   Widget _buildRateUsSection() {
     return GestureDetector(
       onTap: _rateApp,
@@ -276,32 +366,41 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 8,
         child: ListTile(
-          leading: const Icon(Icons.star_rate, size: 40, color: Colors.deepOrange),
+          leading: Image.asset('assets/icons/rate2.png', height: 30, width: 30),
           title: Text('Rate Us on Play Store', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
           trailing: const Icon(Icons.arrow_forward_ios, color: Colors.deepOrange),
         ),
       ),
     );
   }
-  Widget _buildInfoRow(String title, String value, Icon icon) {
-    return Row(
-      children: [
-        icon,
-        const SizedBox(width: 10),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: '$title: ', // Title text with grey color
-                style: GoogleFonts.poppins(fontSize: 17, color: Colors.grey), // Change color here
-              ),
-              TextSpan(
-                text: value, // Value text with default color
-                style: GoogleFonts.poppins(fontSize: 19), // Keep default style for value
-              ),
-            ],
-          ),
+
+  Widget _buildFollowUsSection() {
+    return GestureDetector(
+      onTap: _followUsOnInstagram,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 8,
+        child: ListTile(
+          leading: Image.asset('assets/icons/instagram.png', height: 45, width: 45), // Add Instagram icon in your assets
+          title: Text('Follow Us on Instagram', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.deepOrange),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, Icon icon) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            icon,
+            const SizedBox(width: 10),
+            Text(label, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        Text(value, style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey.shade700)),
       ],
     );
   }

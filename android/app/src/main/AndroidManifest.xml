@@ -12,6 +12,21 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Queries Section -->
+    <queries>
+        <!-- Allow querying for the Instagram app via HTTPS -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" android:host="www.instagram.com" />
+        </intent>
+
+        <!-- Allow querying for the Instagram app via Instagram URI scheme -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="instagram" />
+        </intent>
+    </queries>
+
     <application
             android:label="Leo Quotes"
             android:name="${applicationName}"
@@ -24,8 +39,7 @@
         <meta-data
                 android:name="com.google.android.play.core.enableAppUpdate"
                 android:value="true"
-        />
-
+                />
 
         <activity
                 android:name=".MainActivity"

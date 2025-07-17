@@ -29,7 +29,6 @@ class QuotesService with ChangeNotifier {
             });
           }
         }
-
         quotesList = tempList; // Update quotes list
         notifyListeners(); // Notify listeners about the update
       } else {

@@ -43,6 +43,12 @@ class CheckIntroStatus extends StatefulWidget {
 }
 
 class _CheckIntroStatusState extends State<CheckIntroStatus> {
+
+  Future<void> clearLocalData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clears all saved data in SharedPreferences
+  }
+
   bool _isFirstLaunch = true;
 
   @override
@@ -59,6 +65,8 @@ class _CheckIntroStatusState extends State<CheckIntroStatus> {
     bool isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
 
     if (isFirstLaunch) {
+      await clearLocalData(); // Clear data when user reinstalls the app
+      prefs.setBool('isFirstLaunch', false); // Mark first launch as completed
       setState(() {
         _isFirstLaunch = true;
       });
