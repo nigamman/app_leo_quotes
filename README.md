@@ -1,16 +1,65 @@
-# untitled5
+# Leo Quotes 🌟  
+A beautifully designed motivational quotes app built with Flutter.
 
-A new Flutter project.
+[![Play Store](https://img.shields.io/badge/Download-Play%20Store-blue?logo=google-play)](https://play.google.com/store/apps/details?id=com.nigamman.leoquotes)
 
-## Getting Started
+Leo Quotes provides a curated collection of inspirational and motivational quotes to uplift your day. With a sleek interface, it's the perfect companion for daily positivity.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## ✨ Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 📝 **Curated Quotes**: Motivational, success, life, and wisdom quotes.
+- 🔔 **Daily Quote Notifications**: Get inspired with daily reminders.
+- 📱 **Home Screen Widget** *(Android)*: Displays quotes right on the user's home screen — updates regularly.
+- ⚙️ **Background Tasks**: Powered by `workmanager` to refresh quotes in the widget.
+- 📥 **Offline Access**: Works even without an internet connection.
+- 🎨 **Polished UI/UX**: Smooth transitions, dark mode, and clean typography.
+- 🔍 **Category Browsing**: Easily explore quotes by category.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🛠️ Tech Stack
+
+- **Flutter** & **Dart**
+- **State Management**: [Provider, Riverpod]
+- **Local Storage**: [Shared Preferences, Firebase Realtime Database]
+- **Push Notifications**: Onesignal
+- **Animations**: Android UI toolkit, flutter widgets
+
+---
+
+## 📦 Packages Used
+
+- `provider` – State management  
+- `shared_preferences` – Local storage  
+- `home_widget` – Android home screen widget integration  
+- `workmanager` – Background task scheduling for widget updates  
+- `flutter_local_notifications` – Daily quote notifications  
+- `google_fonts` – Typography  
+- `url_launcher` – External link handling  
+- `animations` – UI transitions
+
+---
+
+## ⚙️ Technical Highlights
+
+- Integrated a native **Android home widget** using the `home_widget` package.
+- Quotes are refreshed on the home screen using **background workers** via the `workmanager` package.
+- Built with **modular code structure**, clean architecture, and separation of concerns.
+
+--- 
+
+## 🚀 Getting Started
+
+### Prerequisites:
+- Flutter SDK (>=3.)5.3
+- Android Studio / VS Code
+
+### Setup:
+
+```bash
+git clone https://github.com/nigamman/app_leo_quotes.git
+cd app_leo_quotes
+flutter pub get
+flutter run
